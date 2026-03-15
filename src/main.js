@@ -1,44 +1,29 @@
 import * as THREE from 'three';
 
+import { camera } from './scene/camera.js';
+import { renderer } from './scene/renderer.js';
+import { createLights } from './scene/lighting.js';
+import { setupEnvironment } from './scene/environment.js';
+import { createControls } from './controls/controls.js';
+import { setupResize } from './utils/resize.js';
+import { createTorusKnot } from './objects/TorusKnot.js';
+
 // Scene
 const scene = new THREE.Scene();
 
-// Camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  100
-);
-camera.position.z = 3;
+// Environment & lighting
+setupEnvironment(scene);
+createLights(scene);
 
-// Renderer
-const canvas = document.getElementById('webgl');
-const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Controls
+const controls = createControls(camera, renderer);
 
-// Lighting
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
+// Objects
+const torusKnot = createTorusKnot();
+scene.add(torusKnot);
 
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(2, 2, 3);
-scene.add(directionalLight);
-
-// Mesh
-const geometry = new THREE.TorusKnotGeometry(0.8, 0.3, 128, 32);
-const material = new THREE.MeshStandardMaterial({ color: 0x6c63ff });
-const mesh = new THREE.Mesh(geometry, material);
-scene.add(mesh);
-
-// Handle resize
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-});
+// Resize handler
+setupResize(camera, renderer);
 
 // Animation loop
 const clock = new THREE.Clock();
@@ -46,9 +31,10 @@ const clock = new THREE.Clock();
 function animate() {
   const elapsed = clock.getElapsedTime();
 
-  mesh.rotation.x = elapsed * 0.3;
-  mesh.rotation.y = elapsed * 0.5;
+  torusKnot.rotation.x = elapsed * 0.3;
+  torusKnot.rotation.y = elapsed * 0.5;
 
+  controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }

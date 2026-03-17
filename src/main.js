@@ -1,42 +1,17 @@
-import * as THREE from 'three';
-
 import { camera } from './scene/camera.js';
 import { renderer } from './scene/renderer.js';
-import { createLights } from './scene/lighting.js';
-import { setupEnvironment } from './scene/environment.js';
-import { createControls } from './controls/controls.js';
-import { setupResize } from './utils/resize.js';
-import { createTorusKnot } from './objects/TorusKnot.js';
+import { Game } from './core/Game.js';
+import { PlayerController } from './controllers/PlayerController.js';
+import { createDefaultEnvironment } from './environments/DefaultEnvironment.js';
 
-// Scene
-const scene = new THREE.Scene();
+camera.position.z = 3;
 
-// Environment & lighting
-setupEnvironment(scene);
-createLights(scene);
+const playerController = new PlayerController({ camera, renderer });
 
-// Controls
-const controls = createControls(camera, renderer);
+const game = new Game({ playerController });
 
-// Objects
-const torusKnot = createTorusKnot();
-scene.add(torusKnot);
-
-// Resize handler
-setupResize(camera, renderer);
-
-// Animation loop
-const clock = new THREE.Clock();
-
-function animate() {
-  const elapsed = clock.getElapsedTime();
-
-  torusKnot.rotation.x = elapsed * 0.3;
-  torusKnot.rotation.y = elapsed * 0.5;
-
-  controls.update();
-  renderer.render(scene, camera);
-  requestAnimationFrame(animate);
+for (const entity of createDefaultEnvironment()) {
+  game.world.add(entity);
 }
 
-animate();
+game.start();
